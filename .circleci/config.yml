@@ -1,0 +1,77 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:10.12.0
+
+only_tags: &only_tags
+  filters:
+    tags:
+      only: /^v.*/
+    branches:
+      ignore: /.*/
+
+jobs:
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+      
+      - run:
+          name: Install dependencies
+          command: npm ci
+
+      - run:
+          name: Run tests
+          command: npm test
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - .
+
+  publish:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
+      
+      - run:
+          name: Build package
+          command: npm run build
+
+      - run:
+          name: Versioning package
+          command: npm version $(git describe --tags $(git rev-list --tags --max-count=1)) --no-git-tag-version
+
+      - run:
+          name: Publish package
+          command: npm publish
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+  
+  test-publish:
+    jobs:
+      - test:
+          <<: *only_tags
+      - publish:
+          <<: *only_tags
