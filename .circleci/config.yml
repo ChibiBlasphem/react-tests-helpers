@@ -74,4 +74,6 @@ workflows:
       - test:
           <<: *only_tags
       - publish:
+          requires:
+            - test
           <<: *only_tags
