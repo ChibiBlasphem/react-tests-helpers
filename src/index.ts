@@ -25,3 +25,11 @@ export function testComponent(reactElement: React.ReactElement<any, any>, callba
     callback(((wrapperNode as any) as HTMLElement).firstElementChild as HTMLElement)
   }
 }
+
+export function find(node: HTMLElement, testSelector: string): HTMLElement | null {
+  return node.querySelector(`[data-test="${testSelector}"]`)
+}
+
+export {
+  act
+}
