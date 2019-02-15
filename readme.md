@@ -36,3 +36,35 @@ it('Should have a button', () => {
   })
 })
 ```
+
+### `ReactTestHelpers.find(node: HTMLElement, testSelector: string): HTMLElement | null`
+
+Let you select a specific element with a "data-test" selector 
+
+```javascript
+import React, { useState, useCallback } from 'react'
+import { testComponent, find } from 'react-tests-helpers'
+
+function Counter(props) {
+  const [count, setCount] = useState(0)
+  const clickHandler = useCallback(() => setCount(c => c+1), [])
+
+  return (
+    <div>
+      <button data-test="counter-button" onClick={clickHandler}>{ count }</button>
+    </div>
+  )
+}
+
+it('Should have a button', () => {
+  testComponent(<Counter />, root => {
+    expect(find(root, 'counter-button')).not.toBeNull()
+  })
+})
+```
+
+
+
+### `ReactTestHelpers.act(callback: Function)`
+
+see: https://reactjs.org/blog/2019/02/06/react-v16.8.0.html#testing-hooks
